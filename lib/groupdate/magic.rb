@@ -123,23 +123,23 @@ module Groupdate
           column = column.tr('`', '')
           case period
           when :day_of_week # Sunday = 0, Monday = 1, etc.
-            ["EXTRACT(DOW from CONVERT_TIMEZONE(?, #{column}::timestamp) - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(DOW from #{column}::timestamp - INTERVAL '#{day_start} second')::integer"]
           when :hour_of_day
-            ["EXTRACT(HOUR from CONVERT_TIMEZONE(?, #{column}::timestamp) - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(HOUR from #{column}::timestamp - INTERVAL '#{day_start} second')::integer"]
           when :minute_of_hour
-            ["EXTRACT(MINUTE from CONVERT_TIMEZONE(?, #{column}::timestamp) - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(MINUTE from #{column}::timestamp - INTERVAL '#{day_start} second')::integer"]
           when :day_of_month
-            ["EXTRACT(DAY from CONVERT_TIMEZONE(?, #{column}::timestamp) - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(DAY from #{column}::timestamp - INTERVAL '#{day_start} second')::integer"]
           when :month_of_year
-            ["EXTRACT(MONTH from CONVERT_TIMEZONE(?, #{column}::timestamp) - INTERVAL '#{day_start} second')::integer", time_zone]
+            ["EXTRACT(MONTH from #{column}::timestamp - INTERVAL '#{day_start} second')::integer"]
           when :week # start on Sunday, not Redshift default Monday
             # Redshift does not return timezone information; it
             # always says it is in UTC time, so we must convert
             # back to UTC to play properly with the rest of Groupdate.
             #
-            ["CONVERT_TIMEZONE(?, 'Etc/UTC', DATE_TRUNC(?, CONVERT_TIMEZONE(?, #{column}) - INTERVAL '#{week_start} day' - INTERVAL '#{day_start} second'))::timestamp + INTERVAL '#{week_start} day' + INTERVAL '#{day_start} second'", time_zone, period, time_zone]
+            ["DATE_TRUNC(?, #{column} - INTERVAL '#{week_start} day' - INTERVAL '#{day_start} second')::timestamp + INTERVAL '#{week_start} day' + INTERVAL '#{day_start} second'", period]
           else
-            ["CONVERT_TIMEZONE(?, 'Etc/UTC', DATE_TRUNC(?, CONVERT_TIMEZONE(?, #{column}) - INTERVAL '#{day_start} second'))::timestamp + INTERVAL '#{day_start} second'", time_zone, period, time_zone]
+            ["DATE_TRUNC(?, #{column} - INTERVAL '#{day_start} second')::timestamp + INTERVAL '#{day_start} second'", period]
           end
         else
           raise Groupdate::Error, "Connection adapter not supported: #{adapter_name}"
