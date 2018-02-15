@@ -120,6 +120,7 @@ module Groupdate
             ["strftime('#{format.gsub(/%/, '%%')}', #{column})"]
           end
         when "Redshift"
+          column = column.tr('`', '')
           case period
           when :day_of_week # Sunday = 0, Monday = 1, etc.
             ["EXTRACT(DOW from CONVERT_TIMEZONE(?, #{column}::timestamp) - INTERVAL '#{day_start} second')::integer", time_zone]
